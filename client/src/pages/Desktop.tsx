@@ -334,7 +334,7 @@ export default function Desktop() {
         left: 0,
         right: 0,
         bottom: 0,
-        background: '#008080',
+        background: '#c0c0c0',
         overflow: 'hidden',
       }}
       data-testid="desktop"

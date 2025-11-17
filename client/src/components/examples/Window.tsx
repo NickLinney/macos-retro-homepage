@@ -15,7 +15,7 @@ export default function WindowExample() {
   }
 
   return (
-    <div style={{ position: 'relative', height: '600px', background: '#008080' }}>
+    <div style={{ position: 'relative', height: '600px', background: '#c0c0c0' }}>
       <Window
         title="Example Window"
         onClose={() => setIsOpen(false)}

@@ -39,8 +39,12 @@ export default function MenuBar({ menus }: MenuBarProps) {
                   border: 'none',
                   padding: '0 8px',
                   cursor: 'pointer',
-                  fontFamily: 'Chicago, sans-serif',
-                  fontSize: '11px',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  fontSize: '13px',
+                  fontWeight: 'bold',
+                  textShadow: activeMenu === index 
+                    ? 'none'
+                    : '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, -2px 0 0 #fff, 2px 0 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff, -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff',
                 }}
                 onClick={() => handleMenuClick(index)}
                 data-testid={`menu-${menu.title.toLowerCase()}`}
