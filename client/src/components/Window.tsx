@@ -5,6 +5,7 @@ export interface WindowProps {
   title: string;
   children: React.ReactNode;
   onClose: () => void;
+  onMinimize?: () => void;
   initialX?: number;
   initialY?: number;
   width?: number;
@@ -17,6 +18,7 @@ export default function Window({
   title,
   children,
   onClose,
+  onMinimize,
   initialX = 100,
   initialY = 100,
   width = 500,
@@ -47,6 +49,19 @@ export default function Window({
         <div className="title-bar" style={{ cursor: 'move', userSelect: 'none' }}>
           <div className="title-bar-text">{title}</div>
           <div className="title-bar-controls">
+            {onMinimize && (
+              <button
+                aria-label="Minimize"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMinimize();
+                }}
+                style={{ marginRight: '4px' }}
+                data-testid={`button-minimize-${title.toLowerCase().replace(/\s+/g, '-')}`}
+              >
+                −
+              </button>
+            )}
             <button
               aria-label="Close"
               onClick={(e) => {

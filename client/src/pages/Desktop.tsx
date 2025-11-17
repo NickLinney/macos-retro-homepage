@@ -8,6 +8,7 @@ import VideoGames from '@/components/VideoGames';
 import Calculator from '@/components/Calculator';
 import TextEditor from '@/components/TextEditor';
 import FileBrowser from '@/components/FileBrowser';
+import Dock from '@/components/Dock';
 
 interface OpenWindow {
   id: string;
@@ -17,6 +18,7 @@ interface OpenWindow {
   height?: number;
   initialX?: number;
   initialY?: number;
+  minimized?: boolean;
 }
 
 export default function Desktop() {
@@ -38,6 +40,19 @@ export default function Desktop() {
 
   const closeWindow = (id: string) => {
     setWindows(windows.filter(w => w.id !== id));
+  };
+
+  const minimizeWindow = (id: string) => {
+    setWindows(windows.map(w => 
+      w.id === id ? { ...w, minimized: true } : w
+    ));
+  };
+
+  const restoreWindow = (id: string) => {
+    setWindows(windows.map(w => 
+      w.id === id ? { ...w, minimized: false } : w
+    ));
+    bringToFront(id);
   };
 
   const bringToFront = (id: string) => {
@@ -218,11 +233,12 @@ export default function Desktop() {
         })}
       />
 
-      {windows.map((window) => (
+      {windows.filter(w => !w.minimized).map((window) => (
         <Window
           key={window.id}
           title={window.title}
           onClose={() => closeWindow(window.id)}
+          onMinimize={() => minimizeWindow(window.id)}
           initialX={window.initialX}
           initialY={window.initialY}
           width={window.width}
@@ -233,6 +249,14 @@ export default function Desktop() {
           {window.content}
         </Window>
       ))}
+
+      <Dock
+        items={windows.filter(w => w.minimized).map(w => ({
+          id: w.id,
+          title: w.title,
+          onClick: () => restoreWindow(w.id),
+        }))}
+      />
     </div>
   );
 }
