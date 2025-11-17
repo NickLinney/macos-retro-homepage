@@ -123,8 +123,15 @@ Preferred communication style: Simple, everyday language.
 
 **External Assets:**
 - System.css loaded from CDN: https://unpkg.com/@sakun/system.css
-- Default audio file: attached_assets/ff4boss_1763391077864.mid (MIDI format, not playable in modern browsers)
+- Default audio file: attached_assets/ff4boss_1763391077864.mid (MIDI format, synthesized using Tone.js)
 - Favicon: /favicon.png (referenced but not present in repository)
+
+**MIDI Playback Implementation:**
+- Uses Tone.js (@tonejs/midi + tone packages) for browser-based MIDI synthesis
+- MIDI files parsed and notes scheduled on Tone.Transport timeline
+- Each MIDI track gets a PolySynth instrument for playback
+- Transport controls (play/pause/seek) fully functional
+- Hybrid system: MIDI uses Tone.js, MP3/WAV use HTML5 audio element
 
 **Path Aliases:**
 - `@/`: Maps to client/src/
