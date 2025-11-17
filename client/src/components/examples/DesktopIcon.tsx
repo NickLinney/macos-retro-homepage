@@ -2,7 +2,7 @@ import DesktopIcon from '../DesktopIcon';
 
 export default function DesktopIconExample() {
   return (
-    <div style={{ position: 'relative', height: '300px', background: '#c0c0c0', padding: '20px' }}>
+    <div style={{ position: 'relative', height: '300px', background: '#ffffff', padding: '20px' }}>
       <DesktopIcon
         label="OS Drive"
         icon="💾"

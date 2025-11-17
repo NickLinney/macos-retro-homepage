@@ -27,7 +27,14 @@ export default function MenuBar({ menus }: MenuBarProps) {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50" style={{ height: '20px' }}>
-      <div className="title-bar" style={{ margin: 0, borderRadius: 0 }}>
+      <div 
+        className="title-bar" 
+        style={{ 
+          margin: 0, 
+          borderRadius: 0,
+          background: 'repeating-linear-gradient(45deg, #000, #000 2px, #fff 2px, #fff 4px)',
+        }}
+      >
         <div className="title-bar-text" style={{ display: 'flex', gap: '12px', padding: '2px 8px' }}>
           {menus.map((menu, index) => (
             <div key={index} style={{ position: 'relative' }}>
@@ -39,8 +46,8 @@ export default function MenuBar({ menus }: MenuBarProps) {
                   border: 'none',
                   padding: '0 8px',
                   cursor: 'pointer',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  fontSize: '13px',
+                  fontFamily: 'Chicago, sans-serif',
+                  fontSize: '11px',
                   fontWeight: 'bold',
                   textShadow: activeMenu === index 
                     ? 'none'
