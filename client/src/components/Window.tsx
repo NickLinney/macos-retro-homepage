@@ -46,9 +46,9 @@ export default function Window({
         onClick={onFocus}
         data-testid={`window-${title.toLowerCase().replace(/\s+/g, '-')}`}
       >
-        <div className="title-bar" style={{ cursor: 'move', userSelect: 'none' }}>
+        <div className="title-bar" style={{ cursor: 'move', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div className="title-bar-text">{title}</div>
-          <div className="title-bar-controls">
+          <div className="title-bar-controls" style={{ display: 'flex', flexDirection: 'row', gap: '2px', alignItems: 'center' }}>
             {onMinimize && (
               <button
                 aria-label="Minimize"
@@ -56,7 +56,6 @@ export default function Window({
                   e.stopPropagation();
                   onMinimize();
                 }}
-                style={{ marginRight: '4px' }}
                 data-testid={`button-minimize-${title.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 −
