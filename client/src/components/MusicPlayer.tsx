@@ -13,6 +13,7 @@ export default function MusicPlayer() {
   const [currentTrack, setCurrentTrack] = useState(defaultAudioPath);
   const [trackName, setTrackName] = useState('Final Fantasy IV - Boss Battle');
   const [isMidiFile, setIsMidiFile] = useState(true);
+  const [volume, setVolume] = useState(70);
   const timerRef = useRef<number | null>(null);
 
   // Load MIDI file when component mounts or track changes
@@ -88,6 +89,21 @@ export default function MusicPlayer() {
       }
     };
   }, [currentTrack]);
+
+  // Initialize Tone.js volume on mount
+  useEffect(() => {
+    // Set initial volume for Tone.js (convert 0-100 to decibels)
+    // 100 = 0dB (max), 0 = -60dB (essentially silent)
+    const db = volume === 0 ? -Infinity : (volume - 100) * 0.6;
+    Tone.Destination.volume.value = db;
+  }, []);
+
+  // Sync audio element volume whenever volume changes or audio becomes available
+  useEffect(() => {
+    if (audioRef.current && !isMidiFile) {
+      audioRef.current.volume = volume / 100;
+    }
+  }, [volume, isMidiFile, currentTrack]);
 
   // Setup audio element listeners for non-MIDI files
   useEffect(() => {
@@ -326,11 +342,20 @@ export default function MusicPlayer() {
           type="range"
           min="0"
           max="100"
-          defaultValue="70"
+          value={volume}
           onChange={(e) => {
+            const newVolume = parseInt(e.target.value);
+            setVolume(newVolume);
+            
+            // Set volume for HTML5 audio (0-1 range)
             if (audioRef.current) {
-              audioRef.current.volume = parseInt(e.target.value) / 100;
+              audioRef.current.volume = newVolume / 100;
             }
+            
+            // Set volume for Tone.js (decibel range)
+            // 100 = 0dB (max), 0 = -60dB (essentially silent)
+            const db = newVolume === 0 ? -Infinity : (newVolume - 100) * 0.6;
+            Tone.Destination.volume.value = db;
           }}
           style={{ flex: 1 }}
           data-testid="music-volume-slider"
