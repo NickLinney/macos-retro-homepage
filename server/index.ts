@@ -1,8 +1,18 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import path from "path";
 
 const app = express();
+
+// Serve attached_assets as static files with proper MIME types
+app.use('/attached_assets', express.static(path.resolve(import.meta.dirname, '..', 'attached_assets'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.mid')) {
+      res.setHeader('Content-Type', 'audio/midi');
+    }
+  }
+}));
 
 declare module 'http' {
   interface IncomingMessage {

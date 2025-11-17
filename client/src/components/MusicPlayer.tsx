@@ -9,7 +9,6 @@ export default function MusicPlayer() {
   const [duration, setDuration] = useState(0);
   const [currentTrack, setCurrentTrack] = useState(defaultAudioPath);
   const [trackName, setTrackName] = useState('Final Fantasy IV - Boss Battle');
-  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -18,26 +17,15 @@ export default function MusicPlayer() {
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => setDuration(audio.duration);
     const handleEnded = () => setIsPlaying(false);
-    const handleError = () => {
-      setLoadError(true);
-      setIsPlaying(false);
-    };
-    const handleCanPlay = () => {
-      setLoadError(false);
-    };
 
     audio.addEventListener('timeupdate', updateTime);
     audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('error', handleError);
-    audio.addEventListener('canplay', handleCanPlay);
 
     return () => {
       audio.removeEventListener('timeupdate', updateTime);
       audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('error', handleError);
-      audio.removeEventListener('canplay', handleCanPlay);
     };
   }, []);
 
@@ -45,19 +33,11 @@ export default function MusicPlayer() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (loadError) {
-      alert('Cannot play this audio format. Please use the Eject button to load a .mp3 or .wav file.');
-      return;
-    }
-
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
     } else {
-      audio.play().catch(() => {
-        setLoadError(true);
-        alert('Cannot play this audio format. Please use the Eject button to load a .mp3 or .wav file.');
-      });
+      audio.play();
       setIsPlaying(true);
     }
   };
@@ -75,14 +55,13 @@ export default function MusicPlayer() {
   };
 
   const handleEject = () => {
-    const input = prompt('Enter URL for a music file (.mp3 or .wav recommended):\n\nExample: https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+    const input = prompt('Enter URL or file path for a music file (.mid, .wav, .mp3):\n\nExample: https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
     if (input && input.trim()) {
       const wasPlaying = isPlaying;
       if (isPlaying) {
         audioRef.current?.pause();
         setIsPlaying(false);
       }
-      setLoadError(false);
       setCurrentTrack(input.trim());
       setTrackName(input.trim().split('/').pop() || 'Unknown Track');
       
@@ -90,7 +69,7 @@ export default function MusicPlayer() {
         audioRef.current.load();
         if (wasPlaying) {
           setTimeout(() => {
-            audioRef.current?.play().catch(() => setLoadError(true));
+            audioRef.current?.play();
             setIsPlaying(true);
           }, 100);
         }
@@ -123,7 +102,7 @@ export default function MusicPlayer() {
         <div 
           style={{ 
             background: '#000',
-            color: loadError ? '#f00' : '#0f0',
+            color: '#0f0',
             padding: '8px',
             fontFamily: 'monospace',
             fontSize: '12px',
@@ -134,7 +113,7 @@ export default function MusicPlayer() {
           }}
           data-testid="music-track-name"
         >
-          {loadError ? '⚠ Format Not Supported - Use Eject to load MP3/WAV' : trackName}
+          {trackName}
         </div>
       </div>
 
