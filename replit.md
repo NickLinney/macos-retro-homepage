@@ -6,7 +6,7 @@ This is a nostalgic personal homepage designed to recreate the classic MacOS 7 d
 
 The application combines modern web technologies (React, TypeScript, Vite) with retro aesthetics powered by the system.css library, which provides pixel-perfect MacOS 7 UI components including Chicago font, monochrome icons, and classic window chrome.
 
-**Current Status (November 17, 2025):** Fully functional MVP with interactive desktop interface, complete window management, working applications (Calculator, Text Editor, File Browser), and rich content sections for programming projects, tabletop gaming, and video games.
+**Current Status (November 17, 2025):** Fully functional MVP with interactive desktop interface, complete window management, working applications (Calculator, Text Editor, File Browser, Music Player), and rich content sections for programming projects, tabletop gaming, and video games.
 
 ## User Preferences
 
@@ -85,6 +85,7 @@ Preferred communication style: Simple, everyday language.
    - **Calculator**: Fully functional calculator with number pad and basic operations
    - **TextEditor**: Live text editor with word/character/line count
    - **FileBrowser**: Expandable/collapsible tree view of file system
+   - **MusicPlayer**: HTML5 audio player with play/pause/forward/back controls, volume slider, progress bar, and URL loading via Eject button; supports MP3/WAV formats with graceful error handling for unsupported formats
 
 **Spacing & Layout:**
 - System.css native spacing (4px, 8px, 12px, 16px units)
@@ -122,6 +123,7 @@ Preferred communication style: Simple, everyday language.
 
 **External Assets:**
 - System.css loaded from CDN: https://unpkg.com/@sakun/system.css
+- Default audio file: attached_assets/ff4boss_1763391077864.mid (MIDI format, not playable in modern browsers)
 - Favicon: /favicon.png (referenced but not present in repository)
 
 **Path Aliases:**

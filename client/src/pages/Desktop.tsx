@@ -8,6 +8,7 @@ import VideoGames from '@/components/VideoGames';
 import Calculator from '@/components/Calculator';
 import TextEditor from '@/components/TextEditor';
 import FileBrowser from '@/components/FileBrowser';
+import MusicPlayer from '@/components/MusicPlayer';
 import Dock from '@/components/Dock';
 
 interface OpenWindow {
@@ -163,6 +164,18 @@ export default function Desktop() {
             height: 400,
             initialX: 200,
             initialY: 160,
+          }),
+        },
+        {
+          label: 'Music',
+          action: () => openWindow({
+            id: 'music',
+            title: 'Music Player',
+            content: <MusicPlayer />,
+            width: 360,
+            height: 450,
+            initialX: 220,
+            initialY: 120,
           }),
         },
       ] as MenuItem[],
