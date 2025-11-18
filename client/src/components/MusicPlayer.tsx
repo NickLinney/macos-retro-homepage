@@ -16,16 +16,15 @@ export default function MusicPlayer() {
   const [isMidiFile, setIsMidiFile] = useState(true);
   const [volume, setVolume] = useState(70);
   const timerRef = useRef<number | null>(null);
+  const currentBlobURLRef = useRef<string | null>(null);
 
   // Load MIDI file when component mounts or track changes
   useEffect(() => {
     const loadMidi = async () => {
-      if (!currentTrack.endsWith('.mid')) {
-        setIsMidiFile(false);
+      // isMidiFile is already set correctly by handleFileSelect or initial state
+      if (!isMidiFile) {
         return;
       }
-
-      setIsMidiFile(true);
       
       // Stop and reset transport
       Tone.getTransport().stop();
@@ -89,7 +88,16 @@ export default function MusicPlayer() {
         clearInterval(timerRef.current);
       }
     };
-  }, [currentTrack]);
+  }, [currentTrack, isMidiFile]);
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (currentBlobURLRef.current) {
+        URL.revokeObjectURL(currentBlobURLRef.current);
+      }
+    };
+  }, []);
 
   // Initialize Tone.js volume on mount
   useEffect(() => {
@@ -224,8 +232,19 @@ export default function MusicPlayer() {
       setIsPlaying(false);
     }
 
+    // Revoke previous blob URL to prevent memory leak
+    if (currentBlobURLRef.current) {
+      URL.revokeObjectURL(currentBlobURLRef.current);
+      currentBlobURLRef.current = null;
+    }
+
     // Create a blob URL for the file
     const fileURL = URL.createObjectURL(file);
+    currentBlobURLRef.current = fileURL;
+    
+    // Detect if file is MIDI based on original filename
+    const isMidi = fileName.endsWith('.mid') || fileName.endsWith('.midi');
+    setIsMidiFile(isMidi);
     
     setCurrentTime(0);
     setCurrentTrack(fileURL);
@@ -399,9 +418,9 @@ export default function MusicPlayer() {
           {isPlaying ? '▶ Playing' : '⏸ Stopped'}
         </p>
         <p className="status-bar-field">
-          {currentTrack.endsWith('.mid') ? 'MIDI' : 
-           currentTrack.endsWith('.wav') ? 'WAV' : 
-           currentTrack.endsWith('.mp3') ? 'MP3' : 'Audio'}
+          {isMidiFile ? 'MIDI' : 
+           trackName.toLowerCase().endsWith('.wav') ? 'WAV' : 
+           trackName.toLowerCase().endsWith('.mp3') ? 'MP3' : 'Audio'}
         </p>
       </div>
     </div>
