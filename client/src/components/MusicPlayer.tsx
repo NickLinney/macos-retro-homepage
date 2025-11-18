@@ -196,6 +196,27 @@ export default function MusicPlayer() {
     }
   };
 
+  const handleStop = () => {
+    if (isMidiFile) {
+      // Stop MIDI playback and reset to start
+      Tone.getTransport().stop();
+      Tone.getTransport().seconds = 0;
+      setCurrentTime(0);
+      setIsPlaying(false);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    } else {
+      // Stop audio playback and reset to start
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.pause();
+      audio.currentTime = 0;
+      setCurrentTime(0);
+      setIsPlaying(false);
+    }
+  };
+
   const handleEject = () => {
     // Trigger the file input dialog
     fileInputRef.current?.click();
@@ -341,11 +362,12 @@ export default function MusicPlayer() {
       </div>
 
       {/* Control Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
         <button 
           className="btn"
           onClick={handleBack}
           title="Back 10 seconds"
+          style={{ transform: 'scale(0.8)' }}
           data-testid="button-music-back"
         >
           ⏮
@@ -354,23 +376,25 @@ export default function MusicPlayer() {
           className="btn"
           onClick={handlePlayPause}
           title={isPlaying ? 'Pause' : 'Play'}
-          style={{ fontWeight: 'bold' }}
+          style={{ fontWeight: 'bold', transform: 'scale(0.8)' }}
           data-testid="button-music-play-pause"
         >
           {isPlaying ? '⏸' : '▶'}
         </button>
         <button 
           className="btn"
-          onClick={handlePlayPause}
-          title={isPlaying ? 'Pause' : 'Play'}
-          data-testid="button-music-pause"
+          onClick={handleStop}
+          title="Stop"
+          style={{ transform: 'scale(0.8)' }}
+          data-testid="button-music-stop"
         >
-          ⏸
+          ⏹
         </button>
         <button 
           className="btn"
           onClick={handleForward}
           title="Forward 10 seconds"
+          style={{ transform: 'scale(0.8)' }}
           data-testid="button-music-forward"
         >
           ⏭
@@ -379,6 +403,7 @@ export default function MusicPlayer() {
           className="btn"
           onClick={handleEject}
           title="Load new track"
+          style={{ transform: 'scale(0.8)' }}
           data-testid="button-music-eject"
         >
           ⏏
