@@ -7,6 +7,7 @@ const defaultAudioPath = '/attached_assets/ff4boss_1763391077864.mid';
 export default function MusicPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const midiPartRef = useRef<Tone.Part | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -188,31 +189,51 @@ export default function MusicPlayer() {
   };
 
   const handleEject = () => {
-    const input = prompt('Enter URL or file path for a music file (.mid, .wav, .mp3):\n\nExample: https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
-    if (input && input.trim()) {
-      // Stop current playback
-      if (isPlaying) {
-        if (isMidiFile) {
-          Tone.getTransport().stop();
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-          }
-        } else {
-          audioRef.current?.pause();
-        }
-        setIsPlaying(false);
+    // Trigger the file input dialog
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file extension
+    const fileName = file.name.toLowerCase();
+    const validExtensions = ['.mid', '.midi', '.wav', '.mp3'];
+    const isValidFile = validExtensions.some(ext => fileName.endsWith(ext));
+
+    if (!isValidFile) {
+      alert('Invalid file type. Please select a .mid, .midi, .wav, or .mp3 file.');
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
-      
-      setCurrentTime(0);
-      setCurrentTrack(input.trim());
-      setTrackName(input.trim().split('/').pop() || 'Unknown Track');
-      
-      // For non-MIDI files
-      if (!input.trim().endsWith('.mid')) {
-        if (audioRef.current) {
-          audioRef.current.load();
+      return;
+    }
+
+    // Stop current playback
+    if (isPlaying) {
+      if (isMidiFile) {
+        Tone.getTransport().stop();
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
         }
+      } else {
+        audioRef.current?.pause();
       }
+      setIsPlaying(false);
+    }
+
+    // Create a blob URL for the file
+    const fileURL = URL.createObjectURL(file);
+    
+    setCurrentTime(0);
+    setCurrentTrack(fileURL);
+    setTrackName(file.name);
+
+    // Reset the file input so the same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -239,6 +260,16 @@ export default function MusicPlayer() {
   return (
     <div style={{ padding: '16px', minWidth: '320px' }}>
       {!isMidiFile && <audio ref={audioRef} src={currentTrack} />}
+      
+      {/* Hidden file input for local file selection */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept=".mid,.midi,.wav,.mp3,audio/midi,audio/wav,audio/mpeg"
+        onChange={handleFileSelect}
+        style={{ display: 'none' }}
+        data-testid="music-file-input"
+      />
       
       {/* Track Display */}
       <div className="field-row-stacked" style={{ marginBottom: '16px' }}>
