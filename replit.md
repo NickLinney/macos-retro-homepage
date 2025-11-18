@@ -85,7 +85,7 @@ Preferred communication style: Simple, everyday language.
    - **Calculator**: Fully functional calculator with number pad and basic operations
    - **TextEditor**: Live text editor with word/character/line count
    - **FileBrowser**: Expandable/collapsible tree view of file system
-   - **MusicPlayer**: Hybrid audio player with play/pause/forward/back controls, volume slider, progress bar, and local file selection via Eject button; supports .mid/.midi (Tone.js synthesis), .mp3, and .wav formats with file type validation and graceful error handling
+   - **MusicPlayer**: Hybrid audio player with Play/Stop/Forward/Back/Eject controls (80% scale, centered), volume slider, progress bar, and local file selection via system file picker; Play button toggles to Pause icon when playing; Stop button halts playback and resets to 0:00; supports .mid/.midi (Tone.js synthesis), .mp3, and .wav formats with file type validation and graceful error handling
 
 **Spacing & Layout:**
 - System.css native spacing (4px, 8px, 12px, 16px units)
