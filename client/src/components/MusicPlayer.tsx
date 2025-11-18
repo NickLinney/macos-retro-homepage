@@ -7,6 +7,7 @@ const defaultAudioPath = '/attached_assets/ff4boss_1763391077864.mid';
 export default function MusicPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const midiPartRef = useRef<Tone.Part | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -15,16 +16,15 @@ export default function MusicPlayer() {
   const [isMidiFile, setIsMidiFile] = useState(true);
   const [volume, setVolume] = useState(70);
   const timerRef = useRef<number | null>(null);
+  const currentBlobURLRef = useRef<string | null>(null);
 
   // Load MIDI file when component mounts or track changes
   useEffect(() => {
     const loadMidi = async () => {
-      if (!currentTrack.endsWith('.mid')) {
-        setIsMidiFile(false);
+      // isMidiFile is already set correctly by handleFileSelect or initial state
+      if (!isMidiFile) {
         return;
       }
-
-      setIsMidiFile(true);
       
       // Stop and reset transport
       Tone.getTransport().stop();
@@ -88,7 +88,16 @@ export default function MusicPlayer() {
         clearInterval(timerRef.current);
       }
     };
-  }, [currentTrack]);
+  }, [currentTrack, isMidiFile]);
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (currentBlobURLRef.current) {
+        URL.revokeObjectURL(currentBlobURLRef.current);
+      }
+    };
+  }, []);
 
   // Initialize Tone.js volume on mount
   useEffect(() => {
@@ -187,32 +196,84 @@ export default function MusicPlayer() {
     }
   };
 
-  const handleEject = () => {
-    const input = prompt('Enter URL or file path for a music file (.mid, .wav, .mp3):\n\nExample: https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
-    if (input && input.trim()) {
-      // Stop current playback
-      if (isPlaying) {
-        if (isMidiFile) {
-          Tone.getTransport().stop();
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-          }
-        } else {
-          audioRef.current?.pause();
-        }
-        setIsPlaying(false);
-      }
-      
+  const handleStop = () => {
+    if (isMidiFile) {
+      // Stop MIDI playback and reset to start
+      Tone.getTransport().stop();
+      Tone.getTransport().seconds = 0;
       setCurrentTime(0);
-      setCurrentTrack(input.trim());
-      setTrackName(input.trim().split('/').pop() || 'Unknown Track');
-      
-      // For non-MIDI files
-      if (!input.trim().endsWith('.mid')) {
-        if (audioRef.current) {
-          audioRef.current.load();
-        }
+      setIsPlaying(false);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
       }
+    } else {
+      // Stop audio playback and reset to start
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.pause();
+      audio.currentTime = 0;
+      setCurrentTime(0);
+      setIsPlaying(false);
+    }
+  };
+
+  const handleEject = () => {
+    // Trigger the file input dialog
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file extension
+    const fileName = file.name.toLowerCase();
+    const validExtensions = ['.mid', '.midi', '.wav', '.mp3'];
+    const isValidFile = validExtensions.some(ext => fileName.endsWith(ext));
+
+    if (!isValidFile) {
+      alert('Invalid file type. Please select a .mid, .midi, .wav, or .mp3 file.');
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Stop current playback
+    if (isPlaying) {
+      if (isMidiFile) {
+        Tone.getTransport().stop();
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+      } else {
+        audioRef.current?.pause();
+      }
+      setIsPlaying(false);
+    }
+
+    // Revoke previous blob URL to prevent memory leak
+    if (currentBlobURLRef.current) {
+      URL.revokeObjectURL(currentBlobURLRef.current);
+      currentBlobURLRef.current = null;
+    }
+
+    // Create a blob URL for the file
+    const fileURL = URL.createObjectURL(file);
+    currentBlobURLRef.current = fileURL;
+    
+    // Detect if file is MIDI based on original filename
+    const isMidi = fileName.endsWith('.mid') || fileName.endsWith('.midi');
+    setIsMidiFile(isMidi);
+    
+    setCurrentTime(0);
+    setCurrentTrack(fileURL);
+    setTrackName(file.name);
+
+    // Reset the file input so the same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -239,6 +300,16 @@ export default function MusicPlayer() {
   return (
     <div style={{ padding: '16px', minWidth: '320px' }}>
       {!isMidiFile && <audio ref={audioRef} src={currentTrack} />}
+      
+      {/* Hidden file input for local file selection */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept=".mid,.midi,.wav,.mp3,audio/midi,audio/wav,audio/mpeg"
+        onChange={handleFileSelect}
+        style={{ display: 'none' }}
+        data-testid="music-file-input"
+      />
       
       {/* Track Display */}
       <div className="field-row-stacked" style={{ marginBottom: '16px' }}>
@@ -291,11 +362,12 @@ export default function MusicPlayer() {
       </div>
 
       {/* Control Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
         <button 
           className="btn"
           onClick={handleBack}
           title="Back 10 seconds"
+          style={{ transform: 'scale(0.8)' }}
           data-testid="button-music-back"
         >
           ⏮
@@ -304,23 +376,25 @@ export default function MusicPlayer() {
           className="btn"
           onClick={handlePlayPause}
           title={isPlaying ? 'Pause' : 'Play'}
-          style={{ fontWeight: 'bold' }}
+          style={{ fontWeight: 'bold', transform: 'scale(0.8)' }}
           data-testid="button-music-play-pause"
         >
           {isPlaying ? '⏸' : '▶'}
         </button>
         <button 
           className="btn"
-          onClick={handlePlayPause}
-          title={isPlaying ? 'Pause' : 'Play'}
-          data-testid="button-music-pause"
+          onClick={handleStop}
+          title="Stop"
+          style={{ transform: 'scale(0.8)' }}
+          data-testid="button-music-stop"
         >
-          ⏸
+          ⏹
         </button>
         <button 
           className="btn"
           onClick={handleForward}
           title="Forward 10 seconds"
+          style={{ transform: 'scale(0.8)' }}
           data-testid="button-music-forward"
         >
           ⏭
@@ -329,6 +403,7 @@ export default function MusicPlayer() {
           className="btn"
           onClick={handleEject}
           title="Load new track"
+          style={{ transform: 'scale(0.8)' }}
           data-testid="button-music-eject"
         >
           ⏏
@@ -368,9 +443,9 @@ export default function MusicPlayer() {
           {isPlaying ? '▶ Playing' : '⏸ Stopped'}
         </p>
         <p className="status-bar-field">
-          {currentTrack.endsWith('.mid') ? 'MIDI' : 
-           currentTrack.endsWith('.wav') ? 'WAV' : 
-           currentTrack.endsWith('.mp3') ? 'MP3' : 'Audio'}
+          {isMidiFile ? 'MIDI' : 
+           trackName.toLowerCase().endsWith('.wav') ? 'WAV' : 
+           trackName.toLowerCase().endsWith('.mp3') ? 'MP3' : 'Audio'}
         </p>
       </div>
     </div>
