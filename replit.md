@@ -85,7 +85,7 @@ Preferred communication style: Simple, everyday language.
    - **Calculator**: Fully functional calculator with number pad and basic operations
    - **TextEditor**: Live text editor with word/character/line count
    - **FileBrowser**: Expandable/collapsible tree view of file system
-   - **MusicPlayer**: HTML5 audio player with play/pause/forward/back controls, volume slider, progress bar, and URL loading via Eject button; supports MP3/WAV formats with graceful error handling for unsupported formats
+   - **MusicPlayer**: Hybrid audio player with play/pause/forward/back controls, volume slider, progress bar, and local file selection via Eject button; supports .mid/.midi (Tone.js synthesis), .mp3, and .wav formats with file type validation and graceful error handling
 
 **Spacing & Layout:**
 - System.css native spacing (4px, 8px, 12px, 16px units)
@@ -132,6 +132,14 @@ Preferred communication style: Simple, everyday language.
 - Each MIDI track gets a PolySynth instrument for playback
 - Transport controls (play/pause/seek) fully functional
 - Hybrid system: MIDI uses Tone.js, MP3/WAV use HTML5 audio element
+
+**Local File Loading:**
+- Eject button triggers system file picker dialog (hidden HTML file input)
+- Validates file extensions: .mid, .midi, .wav, .mp3
+- Creates blob URLs via URL.createObjectURL() for local file playback
+- Proper memory management: blob URLs revoked on new file load and component unmount
+- MIDI detection based on original filename (not blob URL) ensures correct playback path
+- Status bar displays accurate file type based on loaded file
 
 **Path Aliases:**
 - `@/`: Maps to client/src/
